@@ -425,9 +425,7 @@ function drawPlots() {
 
     svg.innerHTML = "";
 
-
     plots.forEach(plot => {
-
 
         /* ======================
            POLYGON PLOT
@@ -435,69 +433,50 @@ function drawPlots() {
 
         if (plot.type === "polygon") {
 
-
             const polygon =
                 document.createElementNS(
                     "http://www.w3.org/2000/svg",
                     "polygon"
                 );
 
-
             polygon.setAttribute(
                 "points",
                 plot.points
             );
 
-
             /* COLOR */
 
-            let color =
-                "green";
-
+            let color = "green";
 
             if (plot.status === "booked") {
-
-                color =
-                    "yellow";
-
+                color = "yellow";
             }
-
 
             if (plot.status === "sold") {
-
-                color =
-                    "red";
-
+                color = "red";
             }
-
 
             polygon.setAttribute(
                 "fill",
                 color
             );
 
-
             polygon.setAttribute(
                 "stroke",
                 "black"
             );
-
 
             polygon.setAttribute(
                 "fill-opacity",
                 "0.7"
             );
 
-
             polygon.setAttribute(
                 "stroke-width",
                 "3"
             );
 
-
-            polygon.style.cursor =
-                "pointer";
-
+            polygon.style.cursor = "pointer";
 
             /* CLICK */
 
@@ -505,21 +484,17 @@ function drawPlots() {
                 "click",
                 () => {
 
-                    showPlotPopup(
-                        plot
-                    );
+                    showPlotPopup(plot);
 
                 }
             );
 
-
-            svg.appendChild(
-                polygon
-            );
+            svg.appendChild(polygon);
 
 
             /* ======================
                PLOT NUMBER
+               AUTO CENTER + SIZE
             ====================== */
 
             const text =
@@ -528,24 +503,190 @@ function drawPlots() {
                     "text"
                 );
 
+            /* Convert polygon points into coordinates */
+
+            const coords =
+                plot.points
+                    .trim()
+                    .split(/\s+/)
+                    .map(point => {
+
+                        const [x, y] =
+                            point
+                                .split(",")
+                                .map(Number);
+
+                        return { x, y };
+
+                    });
+
+
+            /* Safety check */
+
+            if (coords.length < 3) {
+                console.warn(
+                    "Invalid polygon for plot:",
+                    plot.id
+                );
+                return;
+            }
+
+
+            /* ======================
+               CALCULATE POLYGON CENTER
+            ====================== */
+
+            let area = 0;
+            let centerX = 0;
+            let centerY = 0;
+
+            for (
+                let i = 0;
+                i < coords.length;
+                i++
+            ) {
+
+                const current =
+                    coords[i];
+
+                const next =
+                    coords[
+                        (i + 1) %
+                        coords.length
+                    ];
+
+                const cross =
+                    current.x * next.y -
+                    next.x * current.y;
+
+                area += cross;
+
+                centerX +=
+                    (current.x + next.x) *
+                    cross;
+
+                centerY +=
+                    (current.y + next.y) *
+                    cross;
+            }
+
+
+            area = area / 2;
+
+
+            if (Math.abs(area) > 0.001) {
+
+                centerX =
+                    centerX /
+                    (6 * area);
+
+                centerY =
+                    centerY /
+                    (6 * area);
+
+            }
+            else {
+
+                /* Fallback */
+
+                centerX =
+                    coords.reduce(
+                        (sum, p) =>
+                            sum + p.x,
+                        0
+                    ) /
+                    coords.length;
+
+                centerY =
+                    coords.reduce(
+                        (sum, p) =>
+                            sum + p.y,
+                        0
+                    ) /
+                    coords.length;
+
+            }
+
+
+            /* ======================
+               FIND PLOT SIZE
+            ====================== */
+
+            const minX =
+                Math.min(
+                    ...coords.map(
+                        p => p.x
+                    )
+                );
+
+            const maxX =
+                Math.max(
+                    ...coords.map(
+                        p => p.x
+                    )
+                );
+
+            const minY =
+                Math.min(
+                    ...coords.map(
+                        p => p.y
+                    )
+                );
+
+            const maxY =
+                Math.max(
+                    ...coords.map(
+                        p => p.y
+                    )
+                );
+
+
+            const plotWidth =
+                maxX - minX;
+
+            const plotHeight =
+                maxY - minY;
+
+
+            /* ======================
+               AUTOMATIC FONT SIZE
+            ====================== */
+
+            let fontSize =
+                Math.min(
+                    plotWidth,
+                    plotHeight
+                ) * 0.55;
+
+
+            fontSize =
+                Math.max(
+                    10,
+                    Math.min(
+                        18,
+                        fontSize
+                    )
+                );
+
+
+            /* ======================
+               SET NUMBER POSITION
+            ====================== */
 
             text.setAttribute(
                 "x",
-                plot.textX
+                centerX
             );
-
 
             text.setAttribute(
                 "y",
-                plot.textY
+                centerY
             );
-
 
             text.setAttribute(
                 "text-anchor",
                 "middle"
             );
-
 
             text.setAttribute(
                 "dominant-baseline",
@@ -553,21 +694,38 @@ function drawPlots() {
             );
 
 
+            /* ======================
+               NUMBER APPEARANCE
+            ====================== */
+
             text.setAttribute(
                 "fill",
                 "white"
             );
 
-
             text.setAttribute(
                 "font-size",
-                "18"
+                fontSize
             );
-
 
             text.setAttribute(
                 "font-weight",
                 "bold"
+            );
+
+            text.setAttribute(
+                "stroke",
+                "black"
+            );
+
+            text.setAttribute(
+                "stroke-width",
+                "1.5"
+            );
+
+            text.setAttribute(
+                "paint-order",
+                "stroke"
             );
 
 
@@ -575,22 +733,22 @@ function drawPlots() {
                 plot.id;
 
 
-            /* IMPORTANT:
-               Prevent number from
-               blocking plot click */
+            /* Number must not block plot clicks */
 
             text.style.pointerEvents =
                 "none";
 
 
-            svg.appendChild(
-                text
-            );
+            svg.appendChild(text);
 
         }
 
-    });
+    });   // ← CLOSES plots.forEach()
 
+
+    /* ==========================
+       UPDATE COUNTERS
+    ========================== */
 
     updateCounts();
 
