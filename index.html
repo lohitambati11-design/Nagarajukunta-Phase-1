@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Nagarajukunta Phase 1 Layout</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+
+
+<!-- =========================
+     TOOLBAR
+========================= -->
+
+<div class="toolbar">
+
+    <h2>Nagarajukunta Phase 1 Layout</h2>
+
+
+    <div>
+
+        Available:
+        <span id="availableCount">0</span>
+
+        |
+
+        Booked:
+        <span id="bookedCount">0</span>
+
+        |
+
+        Sold:
+        <span id="soldCount">0</span>
+
+    </div>
+
+
+    <div id="coordinates">
+
+        X: 0 | Y: 0
+
+    </div>
+
+
+    <div style="margin-top:10px;">
+
+        <input
+            type="number"
+            id="searchPlot"
+            placeholder="Enter Plot No"
+        >
+
+
+        <button id="searchBtn">
+
+            Search Plot
+
+        </button>
+
+
+        <button id="adminBtn">
+
+            Admin Login
+
+        </button>
+
+    </div>
+    
+
+</div>
+
+
+
+<!-- =========================
+     LEGEND
+========================= -->
+
+<div id="legendBox">
+
+    <table>
+
+        <tr>
+
+            <th>Colour</th>
+
+            <th>Status</th>
+
+        </tr>
+
+
+        <tr>
+
+            <td>
+
+                <div class="legend-color available"></div>
+
+            </td>
+
+            <td>
+
+                Available
+
+            </td>
+
+        </tr>
+
+
+        <tr>
+
+            <td>
+
+                <div class="legend-color booked"></div>
+
+            </td>
+
+            <td>
+
+                Booked
+
+            </td>
+
+        </tr>
+
+
+        <tr>
+
+            <td>
+
+                <div class="legend-color sold"></div>
+
+            </td>
+
+            <td>
+
+                Sold
+
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+
+
+<!-- =========================
+     MAP
+========================= -->
+
+<div id="mapContainer">
+
+
+    <!-- ORIGINAL LAYOUT IMAGE -->
+
+    <img
+        id="layoutImage"
+        src="layout.jpg"
+        alt="Nagarajukunta Phase 1 Layout"
+    >
+
+
+    <!-- SVG PLOT OVERLAY -->
+
+    <svg
+        id="map"
+        viewBox="0 0 2048 1448"
+        preserveAspectRatio="none"
+    >
+
+    </svg>
+
+
+</div>
+
+
+
+<!-- =========================
+     PLOT POPUP
+========================= -->
+
+<div id="plotPopup" class="popup">
+
+
+    <div class="popup-content">
+
+
+        <span
+            id="closePopup"
+            onclick="closePopup()"
+        >
+
+            &times;
+
+        </span>
+
+
+        <h3>Plot Details</h3>
+
+
+        <p>
+
+            <b>Plot No:</b>
+
+            <span id="popupPlotNo"></span>
+
+        </p>
+
+
+        <p>
+
+            <b>Status:</b>
+
+            <span id="popupStatus"></span>
+
+        </p>
+
+
+        <p>
+
+            <b>Customer:</b>
+
+            <span id="popupCustomer"></span>
+
+        </p>
+
+
+        <p>
+
+            <b>Extent:</b>
+
+            <span id="popupExtent"></span>
+
+        </p>
+
+
+        <p>
+
+            <b>Facing:</b>
+
+            <span id="popupFacing"></span>
+
+        </p>
+
+
+
+        <!-- =========================
+             ADMIN CONTROLS
+        ========================= -->
+
+        <div
+            id="adminSection"
+            style="display:none; margin-top:15px;"
+        >
+
+            <h4>Admin Controls</h4>
+
+
+            <div style="margin-bottom:10px;">
+
+                <label>
+
+                    Customer Name:
+
+                </label>
+
+                <br>
+
+
+                <input
+                    type="text"
+                    id="customerInput"
+                    placeholder="Enter Customer Name"
+                >
+
+            </div>
+
+
+            <button onclick="saveCustomer()">
+
+                Save Customer
+
+            </button>
+
+
+            <hr>
+
+
+            <button onclick="setStatus('available')">
+
+                Available
+
+            </button>
+
+
+            <button onclick="setStatus('booked')">
+
+                Booked
+
+            </button>
+
+
+            <button onclick="setStatus('sold')">
+
+                Sold
+
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================
+     JAVASCRIPT
+========================= -->
+
+<script src="plots.js"></script>
+
+
+<script
+    type="module"
+    src="firebase.js"
+></script>
+
+
+<script
+    type="module"
+    src="app.js"
+></script>
+
+
+</body>
+
+</html>
