@@ -1,16 +1,26 @@
+
 import {
     db,
+    auth,
     doc,
     setDoc,
     collection,
     getDocs,
-    onSnapshot
+    onSnapshot,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged
 } from "./firebase.js";
 
+
+
+
+const ADMIN_UID = "G1ARskoSoUNlnIVPCwdQ8r7PtHe2";
 
 const svg = document.getElementById("map");
 let isAdmin = false;
 let selectedPlot = null;
+
 
 
 /* ==========================
@@ -764,6 +774,7 @@ loadPlots();
 startRealtimeUpdates();
 
 
+
 /* ==========================
    SVG COORDINATES
 ========================== */
@@ -857,49 +868,106 @@ document
     );
 
 
+
 /* ==========================
-   ADMIN LOGIN
+   ADMIN LOGIN POPUP
 ========================== */
 
-document
-    .getElementById(
-        "adminBtn"
-    )
-    .addEventListener(
-        "click",
-        () => {
+const adminLoginPopup =
+    document.getElementById("adminLoginPopup");
 
+const adminLoginForm =
+    document.getElementById("adminLoginForm");
 
-            const password =
-                prompt(
-                    "Enter Admin Password"
-                );
+const adminLoginMessage =
+    document.getElementById("adminLoginMessage");
 
+const adminLoginSubmit =
+    document.getElementById("adminLoginSubmit");
 
-            if (
-                password === "7702"
-            ) {
-
-                isAdmin =
-                    true;
-
-
-                alert(
-                    "Admin Mode Enabled"
-                );
-
-            }
-
-            else {
-
-                alert(
-                    "Wrong Password"
-                );
-
-            }
-
+document.getElementById("adminBtn").addEventListener("click", async () => {
+    if (isAdmin) {
+        try {
+            await signOut(auth);
+        } catch (error) {
+            console.error("Logout failed:", error);
+            alert("Logout failed. Please try again.");
         }
-    );
+        return;
+    }
+
+    adminLoginMessage.textContent = "";
+    adminLoginForm.reset();
+    adminLoginPopup.style.display = "flex";
+    document.getElementById("adminEmail").focus();
+});
+
+document.getElementById("closeAdminLogin").addEventListener("click", () => {
+    adminLoginPopup.style.display = "none";
+});
+
+adminLoginPopup.addEventListener("click", (event) => {
+    if (event.target === adminLoginPopup) {
+        adminLoginPopup.style.display = "none";
+    }
+});
+
+adminLoginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const email =
+        document.getElementById("adminEmail").value.trim();
+
+    const password =
+        document.getElementById("adminPassword").value;
+
+    adminLoginSubmit.disabled = true;
+    adminLoginSubmit.textContent = "Signing in...";
+    adminLoginMessage.textContent = "";
+
+    try {
+        const result = await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
+
+        if (result.user.uid !== ADMIN_UID) {
+            await signOut(auth);
+            adminLoginMessage.textContent =
+                "This account is not authorized as an admin.";
+            return;
+        }
+
+        adminLoginPopup.style.display = "none";
+        adminLoginForm.reset();
+        alert("Phase 1 admin login successful");
+
+        if (selectedPlot) {
+            showPlotPopup(selectedPlot);
+        }
+
+    } catch (error) {
+        console.error("Admin login failed:", error);
+        adminLoginMessage.textContent =
+            "Login failed. Check your email and password.";
+    } finally {
+        adminLoginSubmit.disabled = false;
+        adminLoginSubmit.textContent = "Login";
+    }
+});
+
+onAuthStateChanged(auth, (user) => {
+    isAdmin = !!user && user.uid === ADMIN_UID;
+
+    document.getElementById("adminBtn").innerText =
+        isAdmin ? "Admin Logout" : "Admin Login";
+
+    if (selectedPlot) {
+        showPlotPopup(selectedPlot);
+    }
+});
+
 
 
 /* ==========================
